@@ -21,7 +21,7 @@ SNRd_dB=10;
 SNRp_dB=(0:2:20)';
 SNRd=10.^(SNRd_dB*0.1);
 SNRp=10.^(SNRp_dB*0.1);
-montecarloiterations = 100;
+montecarloiterations = 10;
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Auxilliary variable definiition just for speed up
@@ -72,27 +72,16 @@ for snr=1:length(SNRp)
         end
         %H_hat = Channel_Estimation(y,X_pilot);
         Y_k=fft(Rx_buf.').';
-        
-        for k = 1:N_fft  
-            H_k=FFT_of_Channel(H,Nt,L,N_fft,k);
-            Xk_mod(:,k)=pinv(H_k)*Y_k(:,k);
-        end
 
         %Receive Side Processing
-%         xn_bar   = pinv(H)*Rx_buf;               % Estimate of x_n ? Remember 1st Nt are relevent rest are redundent vector
-%         Xmod_bar = fft(xn_bar(1:Nt,:).').';      % Estimate of X_mod
-%         Xf_bar   = qamdemod(Xmod_bar,M);         % Estimate of X_f
+        xn_bar   = pinv(H)*Rx_buf;               % Estimate of x_n ? Remember 1st Nt are relevent rest are redundent vector
+        Xmod_bar = fft(xn_bar(1:Nt,:).').';      % Estimate of X_mod
+        Xf_bar   = qamdemod(Xmod_bar,M);         % Estimate of X_f
 
-%         Xk_bar = fft(xn_bar(1:Nt,:).').';      % Estimate of X_mod
-        Xk_bar   = qamdemod(Xk_mod,M);         % Estimate of X_f
         
-        % Performance Measures
-%         SER(snr) = SER(snr)+biterr(Xf_bar,X_f);	% Symbol Error Rate at SNR=SNRp
-%         MSE(snr) = MSE(snr)+sum(sum(abs(x_n-xn_bar(1:Nt,:)).^2));
-        
-        % Performance Measures
-        SER(snr) = SER(snr)+biterr(Xk_bar,X_f);	% Symbol Error Rate at SNR=SNRp
-%         MSE(snr) = MSE(snr)+sum(sum(abs(x_n-xn_bar(1:Nt,:)).^2));
+%         Performance Measures
+        SER(snr) = SER(snr)+biterr(Xf_bar,X_f);	% Symbol Error Rate at SNR=SNRp
+        MSE(snr) = MSE(snr)+sum(sum(abs(x_n-xn_bar(1:Nt,:)).^2));
 
     end
 end

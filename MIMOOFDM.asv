@@ -21,7 +21,7 @@ SNRd_dB=10;
 SNRp_dB=(0:2:20)';
 SNRd=10.^(SNRd_dB*0.1);
 SNRp=10.^(SNRp_dB*0.1);
-montecarloiterations = 100;
+montecarloiterations = 1;
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Auxilliary variable definiition just for speed up
@@ -65,7 +65,7 @@ for snr=1:length(SNRp)
         Tx_buf(:,1:L) = fliplr(x_cp(:,1:L));                  % Tx buffer will transmit Nt bits every instant
                                                               % and maintain the record of path L transmitted vectors
         for pkt = 1:N_fft
-            y=H*reshape(Tx_buf,[],1)+sqrt(.5/SNRp(snr))*(randn(Nr,1)+1j*randn(Nr,1));
+            y=H*reshape(Tx_buf,[],1);%+sqrt(.5/SNRp(snr))*(randn(Nr,1)+1j*randn(Nr,1));
             Tx_buf(:,2:L)=Tx_buf(:,1:L-1);
             Tx_buf(:,1)=x_cp(:,L+pkt);
             Rx_buf(:,pkt) = y;
@@ -75,7 +75,7 @@ for snr=1:length(SNRp)
         
         for k = 1:N_fft  
             H_k=FFT_of_Channel(H,Nt,L,N_fft,k);
-            Xk_mod(:,k)=pinv(H_k)*Y_k(:,k);
+            Xmod_k(:,k)=pinv(H_k)*Y_k(:,k);
         end
 
         %Receive Side Processing
@@ -84,15 +84,10 @@ for snr=1:length(SNRp)
 %         Xf_bar   = qamdemod(Xmod_bar,M);         % Estimate of X_f
 
 %         Xk_bar = fft(xn_bar(1:Nt,:).').';      % Estimate of X_mod
-        Xk_bar   = qamdemod(Xk_mod,M);         % Estimate of X_f
-        
+        Xk_bar   = qamdemod(Xmod_k,M);         % Estimate of X_f
         % Performance Measures
-%         SER(snr) = SER(snr)+biterr(Xf_bar,X_f);	% Symbol Error Rate at SNR=SNRp
-%         MSE(snr) = MSE(snr)+sum(sum(abs(x_n-xn_bar(1:Nt,:)).^2));
-        
-        % Performance Measures
-        SER(snr) = SER(snr)+biterr(Xk_bar,X_f);	% Symbol Error Rate at SNR=SNRp
-%         MSE(snr) = MSE(snr)+sum(sum(abs(x_n-xn_bar(1:Nt,:)).^2));
+        SER(snr) = SER(snr)+biterr(Xf_bar,X_f);	% Symbol Error Rate at SNR=SNRp
+        MSE(snr) = MSE(snr)+sum(sum(abs(x_n-xn_bar(1:Nt,:)).^2));
 
     end
 end
