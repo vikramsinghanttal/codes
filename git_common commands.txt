@@ -1,0 +1,5 @@
+git init
+git add .
+git commit -m "Any comment"
+git remote add https:
+git push origin master
