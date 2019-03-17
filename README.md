@@ -10,6 +10,6 @@ exploit the rich literature to deal with resulting systems.
 
 I am sorry, I wrote this in a real hurry. I will try to elaborate this as soon as possible.
 
-Till then.
+Till than.
 Thanks
 Good Bye
