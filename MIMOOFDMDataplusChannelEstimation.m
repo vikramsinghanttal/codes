@@ -3,7 +3,7 @@
 %%%%%%%$$$$$$$ Multimedia Wireless and Networks Lab $$$$$$%%%%%%
 %%%%%%%+++++ Indian Innstitute of Technology, Kanpur +++++%%%%%%
 
-
+tic
 clear all;
 %/usr/local/MATLAB/MATLAB_Production_Server/R2015a/bin
 
@@ -15,13 +15,13 @@ Cp=L-1;
 Nc=12;
 Nrays=1;
 M=16;
-N_fft=32;
+N_fft=16;
 SNRd_dB=10;
-SNRp_dB=(0:4:40)';
+SNRp_dB=(28:4:36)';
 % SNRp_dB = 10;
 SNRd=10.^(SNRd_dB*0.1);
 SNRp=10.^(SNRp_dB*0.1);
-montecarloiterations = 10000;
+montecarloiterations = 100000;
 % For Channel Estimation
 Np=2*max(Nr,Nt);
 Codebook_Size=1024;
@@ -95,9 +95,13 @@ for snr=1:length(SNRp)
         
 %% ------------------ Receive Side Processing ----------------------------
         for k = 1:N_fft  
-            H_k=FFT_of_Channel(H,Nt,L,N_fft,k);
+            % Calculating FFT of Channel matrix for k-th subcarrier.
+            H_k=zeros(Nr,Nt);
+            for l=0:L-1
+                H_k=H_k+H(:,1+l*Nt:(l+1)*Nt)*exp(-1j*(2*pi*k*l)/N_fft);
+            end
             Hk_aggregate(:,(k-1)*Nt+1:k*Nt) = H_k;
-            H_k_cap=MMSEChannelEstimation(Rx_buf_Pilot(:,(k-1)*Np+1:k*Np), Tx_buf_Pilot(:,(k-1)*Np+1:k*Np), SNRp(snr));
+            H_k_cap=MMSEChannelEstimation(Rx_buf_Pilot(:,(k-1)*Np+1:k*Np), Tx_buf_Pilot(:,(k-1)*Np+1:k*Np), SNRp(snr),Nt);
             Hkaggregate_cap(:,(k-1)*Nt+1:k*Nt) = H_k_cap;
         end
 
@@ -152,3 +156,4 @@ semilogy(SNRp_dB, SER,'r--o');
 title(['SER vs SNR (N_{fft} =',num2str(N_fft),')'])
 xlabel('Signal to Noise Ratio')
 ylabel('Symbol Error Rate');
+toc
